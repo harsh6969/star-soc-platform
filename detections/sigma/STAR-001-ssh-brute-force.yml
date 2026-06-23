@@ -1,0 +1,36 @@
+
+title: STAR-001 — Banking SSH Brute Force
+id: a1b2c3d4-e5f6-4a7b-8c9d-001100110011
+status: experimental
+description: >
+  Detects 5 or more failed SSH authentication attempts from the
+  same source IP within 60 seconds. Tuned for banking environments
+  where even low-volume probing should trigger an alert; default
+  SIEM thresholds (typically 8+ attempts) miss slow brute-force.
+author: Harsh Agarwal
+date: 2026/06/10
+references:
+  - https://attack.mitre.org/techniques/T1110/001/
+tags:
+  - attack.credential_access
+  - attack.t1110.001
+  - banking_threats
+  - brute_force
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    process: sshd
+    message|contains: 'Failed password'
+  condition: selection | count() by src_ip > 4
+  timeframe: 60s
+level: high
+falsepositives:
+  - Legitimate users repeatedly typing wrong passwords from automation or scripts
+  - Monitoring or scanning tools that probe SSH from the same source
+  - Misconfigured backup or batch jobs
+fields:
+  - src_ip
+  - dst_user
+  - timestamp
