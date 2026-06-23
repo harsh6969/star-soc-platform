@@ -1,0 +1,52 @@
+title: STAR-004 — Banking Web Application SQL Injection Attempt
+id: a4b4c4d4-e4f4-4a4b-8c4d-004400440044
+status: experimental
+description: >
+  Detects SQL injection signatures in URLs hitting the banking web
+  application. Matches both URL-encoded and raw forms of common
+  SQLi techniques: UNION-based, tautology, time-based blind
+  (SLEEP, WAITFOR DELAY, BENCHMARK), boolean-based blind, and
+  comment-out evasions. Single-event detection (no correlation)
+  because there is no legitimate reason for these patterns to
+  appear in banking application traffic.
+author: Harsh Agarwal
+date: 2026/06/23
+references:
+  - https://attack.mitre.org/techniques/T1190/
+  - https://owasp.org/www-community/attacks/SQL_Injection
+tags:
+  - attack.initial_access
+  - attack.t1190
+  - banking_threats
+  - sql_injection
+  - web_attack
+logsource:
+  product: nginx
+  category: webserver
+detection:
+  selection:
+    cs-uri-query|contains:
+      - 'union select'
+      - 'UNION SELECT'
+      - 'union%20select'
+      - 'or 1=1'
+      - 'OR 1=1'
+      - 'or%201=1'
+      - 'sleep('
+      - 'SLEEP('
+      - 'benchmark('
+      - 'waitfor delay'
+      - '%27 or %27'
+      - 'select.*from'
+      - 'xp_cmdshell'
+  condition: selection
+level: high
+falsepositives:
+  - Security tools running authorised pentests (should be allowlisted by source IP)
+  - Documentation pages containing SQL keywords as examples (rare in URL)
+fields:
+  - c-ip
+  - cs-uri-stem
+  - cs-uri-query
+  - sc-status
+  - timestamp
