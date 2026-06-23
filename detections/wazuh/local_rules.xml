@@ -1,11 +1,13 @@
 <!-- Local rules for STAR Banking SOC project -->
 <!-- All custom rules use IDs in the 100000-110000 range -->
 
+<!-- ============================================================ -->
+<!-- STAR-001: Banking SSH brute force                            -->
+<!-- ============================================================ -->
 <group name="banking_threats,brute_force,authentication,">
 
-  <!-- STAR-001: Banking-tuned SSH brute force detection -->
   <!-- Triggers on 5+ failed SSH logins from same source IP in 60s -->
-  <!-- More sensitive than default rule 5712 (8 attempts) -->
+  <!-- More sensitive than default rule 5712 (8 attempts)          -->
   <rule id="100100" level="10" frequency="5" timeframe="60">
     <if_matched_sid>5760</if_matched_sid>
     <same_source_ip />
@@ -14,6 +16,26 @@
       <id>T1110.001</id>
     </mitre>
     <group>banking_threats,brute_force,authentication_failures,</group>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- STAR-002: Banking SSH credential stuffing / user enumeration -->
+<!-- ============================================================ -->
+<group name="banking_threats,credential_stuffing,authentication,">
+
+  <!-- Triggers on 3+ invalid user login attempts from same IP in 60s -->
+  <!-- Catches attackers enumerating usernames or replaying leaked     -->
+  <!-- credential dumps against banking infrastructure                 -->
+  <rule id="100200" level="10" frequency="3" timeframe="60">
+    <if_matched_sid>5710</if_matched_sid>
+    <same_source_ip />
+    <description>STAR: Banking SSH credential stuffing — 3+ invalid user attempts from $(srcip) in 60s</description>
+    <mitre>
+      <id>T1110.004</id>
+    </mitre>
+    <group>banking_threats,credential_stuffing,user_enumeration,</group>
   </rule>
 
 </group>
