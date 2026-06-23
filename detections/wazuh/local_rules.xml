@@ -39,3 +39,27 @@
   </rule>
 
 </group>
+
+<!-- ============================================================ -->
+<!-- STAR-003: Banking web application login brute force          -->
+<!-- ============================================================ -->
+<group name="banking_threats,web_brute_force,authentication,">
+
+  <!-- Atomic: Chain off Wazuh rule 31101 (web 4xx) for /rest/user/login -->
+  <rule id="100310" level="3">
+    <if_sid>31101</if_sid>
+    <url>/rest/user/login</url>
+    <description>STAR: Failed login attempt at banking login endpoint</description>
+    <group>banking_threats,web_authentication_failed,</group>
+  </rule>
+
+  <!-- Correlation: 5+ failed logins from same source IP in 60s -->
+  <rule id="100300" level="10" frequency="5" timeframe="60">
+    <if_matched_sid>100310</if_matched_sid>
+    <same_source_ip />
+    <description>STAR: Banking web login brute force — 5+ failed login attempts at /rest/user/login from $(srcip) in 60s</description>
+    <mitre><id>T1110.001</id></mitre>
+    <group>banking_threats,web_brute_force,authentication_failures,</group>
+  </rule>
+
+</group>

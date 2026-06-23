@@ -1,0 +1,39 @@
+title: STAR-003 — Banking Web Application Login Brute Force
+id: a3b3c3d3-e3f3-4a3b-8c3d-003300330033
+status: experimental
+description: >
+  Detects 5 or more failed login attempts (HTTP 401) against the
+  banking application's login endpoint (/rest/user/login) from the
+  same source IP within 60 seconds. Tuned for banking environments
+  where customer-facing portals face constant credential stuffing
+  and brute-force from bots and credential dumps.
+author: Harsh Agarwal
+date: 2026/06/23
+references:
+  - https://attack.mitre.org/techniques/T1110/001/
+  - https://owasp.org/www-community/attacks/Brute_force_attack
+tags:
+  - attack.credential_access
+  - attack.t1110.001
+  - banking_threats
+  - web_brute_force
+logsource:
+  product: nginx
+  category: webserver
+detection:
+  selection:
+    cs-method: POST
+    cs-uri-stem|contains: '/rest/user/login'
+    sc-status: 401
+  condition: selection | count() by c-ip > 4
+  timeframe: 60s
+level: high
+falsepositives:
+  - Legitimate users repeatedly mistyping passwords from mobile devices
+  - Automated health-check scripts hitting the login endpoint
+  - Misconfigured front-end retrying after token expiry
+fields:
+  - c-ip
+  - cs-uri-stem
+  - sc-status
+  - timestamp
