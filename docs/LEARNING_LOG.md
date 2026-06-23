@@ -34,3 +34,12 @@
 - Created scripts/deploy-rules.sh to bake the fix into the deployment procedure
 - MITRE coverage now: 3 detections, 2 techniques (T1110.001, T1110.004), 2 log sources (Linux auth + nginx web)
 - Next: STAR-004 SQL injection OR wrap
+
+## Day 14 — STAR-004 deployed
+- Banking web SQL injection detection (rule 100410, MITRE T1190 Exploit Public-Facing Application)
+- NEW MITRE TACTIC OPENED: TA0001 Initial Access (was previously only Credential Access)
+- Tested with manual curl probes AND sqlmap automated scan
+- 17 distinct SQLi patterns caught: UNION-based, tautology, time-based blind (SLEEP, WAITFOR DELAY), boolean-based blind, complex sqlmap evasions
+- Single-event detection (no correlation) at level 10 — no legitimate use case for SQLi in banking URLs
+- MITRE coverage now: 4 detections, 3 techniques, 2 tactics, 2 log sources
+- Deploy script worked flawlessly — chown/chmod baked in, no permission glitch this time
