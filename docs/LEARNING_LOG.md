@@ -24,3 +24,13 @@
 - MITRE: T1110.001 (Password Guessing), tactic TA0006 (Credential Access)
 - OBSERVATION: Default correlation rule 5712 did not fire (threshold 8+ attempts not met with only 5). Will author a banking-tuned brute-force rule in Phase 4.
 - All four lab containers running cleanly. End-to-end attack-to-detection path validated.
+
+## Day 14 — STAR-003 deployed
+- Banking web application login brute force detection (rule 100300, MITRE T1110.001 in web context)
+- New architecture: nginx reverse proxy in front of Juice Shop, banking-realistic
+- New log source onboarded: nginx access logs via Wazuh agent localfile
+- Two-rule chain: 100310 atomic (failed login at /rest/user/login) + 100300 correlation (5+ in 60s)
+- Production-style finding: docker cp preserves root:root mode 644 which silently breaks Wazuh rule loading; fix is chown wazuh:wazuh + chmod 640
+- Created scripts/deploy-rules.sh to bake the fix into the deployment procedure
+- MITRE coverage now: 3 detections, 2 techniques (T1110.001, T1110.004), 2 log sources (Linux auth + nginx web)
+- Next: STAR-004 SQL injection OR wrap
