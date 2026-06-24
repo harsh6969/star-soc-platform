@@ -81,3 +81,21 @@
   </rule>
 
 </group>
+
+<!-- ============================================================ -->
+<!-- STAR-005: Suspicious sudo command execution                  -->
+<!-- ============================================================ -->
+<group name="banking_threats,privilege_escalation,sudo_abuse,">
+
+  <!-- High-risk sudo commands: credential file reads, account     -->
+  <!-- manipulation, sudoers editing, firewall changes, network    -->
+  <!-- tools an attacker uses for staging                          -->
+  <rule id="100510" level="10">
+    <if_sid>5402</if_sid>
+    <match>/etc/shadow|/etc/sudoers|/etc/passwd|useradd|userdel|usermod|passwd |chmod \+s|chmod 4|chown root|setuid|iptables -F|ufw disable|nc -|netcat|/dev/tcp/|wget http|curl http|base64 -d|history -c|rm -rf /var/log</match>
+    <description>STAR: Suspicious sudo command — possible privilege abuse or insider threat</description>
+    <mitre><id>T1548.003</id></mitre>
+    <group>banking_threats,privilege_escalation,sudo_abuse,</group>
+  </rule>
+
+</group>

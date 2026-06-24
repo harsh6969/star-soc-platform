@@ -1,0 +1,52 @@
+title: STAR-005 — Suspicious Sudo Command Execution
+id: a5b5c5d5-e5f5-4a5b-8c5d-005500550055
+status: experimental
+description: >
+  Detects sudo execution of high-risk commands that should not be
+  routine in a banking environment: credential file reads
+  (/etc/shadow, /etc/passwd), sudoers manipulation, account
+  creation/deletion, firewall flushes, suspicious network tooling
+  (nc, /dev/tcp redirects, base64-decoded shells), and log
+  destruction. Single-event detection — these are insider-threat
+  or post-compromise signals.
+author: Harsh Agarwal
+date: 2026/06/23
+references:
+  - https://attack.mitre.org/techniques/T1548/003/
+tags:
+  - attack.privilege_escalation
+  - attack.t1548.003
+  - banking_threats
+  - sudo_abuse
+  - insider_threat
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    process: sudo
+    message|contains:
+      - '/etc/shadow'
+      - '/etc/sudoers'
+      - '/etc/passwd'
+      - 'useradd'
+      - 'userdel'
+      - 'passwd '
+      - 'chmod +s'
+      - 'chmod 4'
+      - 'iptables -F'
+      - 'nc -'
+      - '/dev/tcp/'
+      - 'base64 -d'
+      - 'history -c'
+  condition: selection
+level: high
+falsepositives:
+  - Sysadmins performing legitimate user lifecycle management (should still alert and be triaged)
+  - Maintenance windows where firewall reload is expected
+  - Documented configuration management runs
+fields:
+  - dst_user
+  - src_user
+  - command
+  - timestamp
