@@ -1,0 +1,24 @@
+---
+# STAR Master Attack Simulation
+# Runs all four STAR attack scenarios sequentially.
+
+- name: "STAR — Master attack banner"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "Start banner"
+      ansible.builtin.debug:
+        msg: "STAR Master — running STAR-001 to STAR-004 sequentially (~60s)"
+
+- import_playbook: 02-attack-ssh-brute-force.yml
+- import_playbook: 03-attack-credential-stuffing.yml
+- import_playbook: 04-attack-web-brute-force.yml
+- import_playbook: 05-attack-sql-injection.yml
+
+- name: "STAR — Master complete"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "Final"
+      ansible.builtin.debug:
+        msg: "All STAR attacks done. Check Wazuh for rules 100100, 100200, 100300, 100410."

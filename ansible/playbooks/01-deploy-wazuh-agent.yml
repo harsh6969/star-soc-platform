@@ -1,0 +1,54 @@
+---
+# Wazuh Agent Deployment — Documentation Playbook
+# Records how the Wazuh agent is deployed on the banking host.
+
+- name: "Deploy Wazuh agent on banking host"
+  hosts: targets
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../vars/star_config.yml
+
+  vars:
+    wazuh_manager_address: "127.0.0.1"
+    wazuh_agent_name: "wazuh-manager-host"
+
+  tasks:
+    - name: "Add Wazuh GPG key"
+      ansible.builtin.apt_key:
+        url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+        state: present
+
+    - name: "Add Wazuh APT repository"
+      ansible.builtin.apt_repository:
+        repo: "deb https://packages.wazuh.com/4.x/apt/ stable main"
+        state: present
+        filename: wazuh
+
+    - name: "Install Wazuh agent"
+      ansible.builtin.apt:
+        name: wazuh-agent
+        state: present
+        update_cache: true
+
+    - name: "Set Wazuh manager address"
+      ansible.builtin.lineinfile:
+        path: /var/ossec/etc/ossec.conf
+        regexp: '<address>.*</address>'
+        line: "      <address>{{ wazuh_manager_address }}</address>"
+
+    - name: "Start and enable Wazuh agent"
+      ansible.builtin.systemd:
+        name: wazuh-agent
+        state: started
+        enabled: true
+        daemon_reload: true
+
+    - name: "Install iptables for firewall-drop AR"
+      ansible.builtin.apt:
+        name: iptables
+        state: present
+
+    - name: "Deployment summary"
+      ansible.builtin.debug:
+        msg: "Wazuh agent deployed: manager={{ wazuh_manager_address }}, name={{ wazuh_agent_name }}"

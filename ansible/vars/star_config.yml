@@ -1,0 +1,25 @@
+# STAR Project — Centralized Variables
+# Edit these to retarget the playbooks.
+
+# Target banking host (Ubuntu WSL2 host running Wazuh agent + sshd)
+target_ip: "172.28.199.49"
+target_user: "harsh"
+
+# Web application target (Juice Shop via nginx reverse proxy)
+web_target_host: "172.28.199.49"
+web_target_port: 3000
+web_login_endpoint: "/rest/user/login"
+
+# Brute-force test parameters
+ssh_brute_attempt_count: 7
+ssh_brute_user: "harsh"
+
+# Credential stuffing parameters
+cred_stuff_users:
+  - admin
+  - oracle
+  - postgres
+  - mysql
+  - jenkins
+  - ftp_user
+  - devops

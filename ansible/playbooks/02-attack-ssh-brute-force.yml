@@ -1,0 +1,64 @@
+---
+# STAR-001 Attack Simulation — SSH Brute Force
+# Triggers Wazuh rule 100100 (Banking SSH brute force)
+# Maps to MITRE T1110.001 — Password Guessing
+
+- name: "STAR-001 — Simulate SSH brute force attack"
+  hosts: attackers
+  gather_facts: false
+  vars_files:
+    - ../vars/star_config.yml
+
+  tasks:
+    - name: "Display attack scenario information"
+      ansible.builtin.debug:
+        msg: |
+          ===============================================================
+          STAR-001 — SSH Brute Force Simulation
+          ===============================================================
+          Target:        {{ target_user }}@{{ target_ip }}
+          Attempts:      {{ ssh_brute_attempt_count }}
+          MITRE:         T1110.001 — Brute Force: Password Guessing
+          Expected:      Wazuh rule 100100 fires at level 10
+          ===============================================================
+
+    - name: "Create password wordlist for attack"
+      ansible.builtin.copy:
+        dest: /tmp/star_001_wordlist.txt
+        content: |
+          ansible_wrong_1
+          ansible_wrong_2
+          ansible_wrong_3
+          ansible_wrong_4
+          ansible_wrong_5
+          ansible_wrong_6
+          ansible_wrong_7
+        mode: '0644'
+
+    - name: "Execute hydra SSH brute force against {{ target_ip }}"
+      ansible.builtin.shell: |
+        hydra -l {{ ssh_brute_user }} \
+              -P /tmp/star_001_wordlist.txt \
+              ssh://{{ target_ip }} \
+              -t 4 -V 2>&1 | tail -15
+      register: hydra_result
+      changed_when: false
+      failed_when: false
+
+    - name: "Show hydra output"
+      ansible.builtin.debug:
+        var: hydra_result.stdout_lines
+
+    - name: "Pause to allow Wazuh to process detection"
+      ansible.builtin.pause:
+        seconds: 10
+        prompt: "Waiting 10 seconds for Wazuh detection (STAR-001 rule 100100) and Active Response..."
+
+    - name: "STAR-001 simulation complete"
+      ansible.builtin.debug:
+        msg: |
+          ===============================================================
+          STAR-001 attack simulation finished.
+          Verify in Wazuh dashboard: rule.id:100100 in last 5 minutes.
+          Verify in active-responses.log: AR firewall-drop fired.
+          ===============================================================

