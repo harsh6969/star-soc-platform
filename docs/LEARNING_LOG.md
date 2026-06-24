@@ -43,3 +43,13 @@
 - Single-event detection (no correlation) at level 10 — no legitimate use case for SQLi in banking URLs
 - MITRE coverage now: 4 detections, 3 techniques, 2 tactics, 2 log sources
 - Deploy script worked flawlessly — chown/chmod baked in, no permission glitch this time
+
+## Day 15 — Phase 5 COMPLETE: Wazuh→Shuffle integration validated
+- Installed Shuffle SOAR via docker-compose (single-node setup)
+- Resolved port conflict: remapped Shuffle's OpenSearch from 9200→9201 (Wazuh keeps 9200)
+- Resolved missing docker network: created shuffle_swarm_executions
+- Built minimal echo workflow (Wazuh-webhook → Shuffle Tools "Repeat back to me" with $exec.body)
+- Added <integration> block to Wazuh manager ossec.conf pointing at Shuffle webhook
+- VALIDATED: STAR-001 alert (rule.id 100100) arrived in Shuffle as webhook payload with full Wazuh JSON
+- Outstanding: Tenzir/Orborus worker container issue prevents action completion (only webhook receive is fully working) — will fix before Phase 7
+- MITRE coverage unchanged at 5 detections / 4 techniques / 3 tactics; project now has working SIEM+SOAR plumbing
